@@ -1,0 +1,1130 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>DialIQ – Smarter Conversations. Stronger Operations.</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg: #050510;
+    --bg-2: #08081a;
+    --purple: #8B5CF6;
+    --purple-bright: #A78BFA;
+    --purple-deep: #6D28D9;
+    --white: #ffffff;
+    --muted: #B8B8C8;
+    --muted-2: #9090A0;
+    --line: rgba(255,255,255,0.08);
+  }
+
+  html { scroll-behavior: smooth; }
+  body {
+    background: var(--bg);
+    color: var(--white);
+    font-family: 'Inter', sans-serif;
+    line-height: 1.5;
+    overflow-x: hidden;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  .container { max-width: 1280px; margin: 0 auto; padding: 0 60px; }
+
+  /* ─────────── HERO ─────────── */
+  .hero {
+    position: relative;
+    padding: 60px 0 80px;
+    overflow: hidden;
+  }
+  .hero::before {
+    content: '';
+    position: absolute;
+    width: 900px; height: 700px;
+    left: 50%; top: 40%;
+    transform: translate(-50%, -50%);
+    background: radial-gradient(ellipse at center, rgba(109,40,217,0.35) 0%, rgba(109,40,217,0.08) 40%, transparent 70%);
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  .hero-grid {
+    position: relative;
+    z-index: 1;
+    display: grid;
+    grid-template-columns: 1.05fr 1.1fr 0.95fr;
+    gap: 40px;
+    align-items: start;
+  }
+
+  /* LEFT column */
+  .logo {
+    font-size: 32px;
+    font-weight: 700;
+    letter-spacing: -0.5px;
+    margin-bottom: 80px;
+  }
+  .logo span { color: var(--purple-bright); }
+
+  .hero-h1 {
+    font-size: 60px;
+    font-weight: 700;
+    line-height: 1.05;
+    letter-spacing: -1.5px;
+    margin-bottom: 32px;
+  }
+  .hero-h1 .pp { color: var(--purple-bright); }
+
+  .hero-sub {
+    font-size: 15px;
+    color: var(--muted);
+    line-height: 1.7;
+    max-width: 380px;
+  }
+
+  /* MIDDLE column - phones */
+  .phones-wrap {
+    position: relative;
+    height: 600px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
+
+  .iphone {
+    position: absolute;
+    background: linear-gradient(145deg, #2a2a35 0%, #15151c 50%, #0a0a12 100%);
+    border-radius: 44px;
+    padding: 8px;
+    box-shadow:
+      0 0 0 1.5px rgba(255,255,255,0.1),
+      0 50px 100px rgba(0,0,0,0.8),
+      0 0 80px rgba(124,58,237,0.15);
+  }
+
+  .iphone-screen {
+    width: 100%; height: 100%;
+    background: #000;
+    border-radius: 38px;
+    position: relative;
+    overflow: hidden;
+    padding: 14px 16px;
+    display: flex;
+    flex-direction: column;
+  }
+
+  /* notch */
+  .notch {
+    position: absolute;
+    top: 12px; left: 50%;
+    transform: translateX(-50%);
+    width: 100px; height: 26px;
+    background: #000;
+    border-radius: 14px;
+    z-index: 10;
+  }
+
+  /* back phone */
+  .phone-back {
+    width: 245px; height: 500px;
+    left: 15%;
+    top: 50px;
+    transform: rotate(-12deg);
+    z-index: 1;
+  }
+  .phone-back .iphone-screen {
+    background: #000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .phone-back-logo {
+    width: 110px; height: 110px;
+    background: #fff;
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 22px;
+    font-weight: 700;
+    color: #000;
+    letter-spacing: -0.5px;
+    box-shadow: 0 0 40px rgba(255,255,255,0.3);
+  }
+  .phone-back-logo span { color: #6D28D9; }
+
+  /* front phone */
+  .phone-front {
+    width: 260px; height: 540px;
+    right: 5%;
+    top: 20px;
+    z-index: 2;
+  }
+
+  /* top status row */
+  .status-row {
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+    padding-top: 6px;
+    margin-bottom: 14px;
+  }
+  .available-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    font-size: 11px;
+    color: rgba(255,255,255,0.8);
+    background: rgba(124,58,237,0.18);
+    border: 1px solid rgba(124,58,237,0.3);
+    padding: 3px 10px;
+    border-radius: 20px;
+  }
+  .available-pill::before {
+    content: '';
+    width: 6px; height: 6px;
+    border-radius: 50%;
+    background: var(--purple-bright);
+  }
+
+  /* keypad */
+  .keypad {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 12px;
+    padding: 6px 0;
+    flex: 1;
+    align-content: center;
+  }
+  .key {
+    width: 60px; height: 60px;
+    margin: 0 auto;
+    border-radius: 50%;
+    background: rgba(255,255,255,0.08);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    color: #fff;
+    cursor: pointer;
+    transition: background .15s;
+  }
+  .key:hover { background: rgba(255,255,255,0.14); }
+  .key .num {
+    font-size: 24px;
+    font-weight: 400;
+    line-height: 1;
+    letter-spacing: -0.5px;
+  }
+  .key .letters {
+    font-size: 8px;
+    font-weight: 500;
+    letter-spacing: 1.5px;
+    color: rgba(255,255,255,0.6);
+    margin-top: 2px;
+    height: 8px;
+  }
+  .key.symbol .num { font-size: 30px; font-weight: 300; }
+
+  /* call button */
+  .call-btn-wrap {
+    display: flex;
+    justify-content: center;
+    padding: 14px 0 10px;
+  }
+  .call-btn {
+    width: 56px; height: 56px;
+    border-radius: 50%;
+    background: #22c55e;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 4px 16px rgba(34,197,94,0.4);
+  }
+  .call-btn svg { width: 26px; height: 26px; fill: #fff; }
+
+  /* phone tabs */
+  .phone-tabs {
+    display: flex;
+    justify-content: space-around;
+    padding-top: 8px;
+    padding-bottom: 4px;
+  }
+  .tab {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 3px;
+    color: rgba(255,255,255,0.45);
+  }
+  .tab.active { color: #fff; }
+  .tab svg { width: 18px; height: 18px; stroke: currentColor; fill: none; stroke-width: 1.5; }
+  .tab span { font-size: 9px; }
+
+  /* home indicator */
+  .home-bar {
+    width: 100px; height: 4px;
+    background: rgba(255,255,255,0.4);
+    border-radius: 3px;
+    margin: 6px auto 0;
+  }
+
+  /* RIGHT column - Our Story */
+  .story-label {
+    color: var(--purple-bright);
+    font-size: 13px;
+    font-weight: 500;
+    margin-bottom: 14px;
+  }
+  .story-h2 {
+    font-size: 26px;
+    font-weight: 600;
+    line-height: 1.25;
+    letter-spacing: -0.5px;
+    margin-bottom: 36px;
+    max-width: 280px;
+  }
+
+  .feat-list {
+    display: flex;
+    flex-direction: column;
+    gap: 26px;
+    position: relative;
+  }
+  .feat-list::before {
+    content: '';
+    position: absolute;
+    left: 22px; top: 50px; bottom: 50px;
+    width: 1px;
+    border-left: 1.5px dashed rgba(167,139,250,0.3);
+    z-index: 0;
+  }
+
+  .feat-row {
+    display: flex;
+    gap: 16px;
+    align-items: flex-start;
+    position: relative;
+    z-index: 1;
+  }
+  .feat-icon {
+    width: 44px; height: 44px;
+    flex-shrink: 0;
+    border-radius: 12px;
+    border: 1.5px solid rgba(167,139,250,0.35);
+    background: var(--bg);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .feat-icon svg {
+    width: 22px; height: 22px;
+    stroke: var(--purple-bright);
+    fill: none;
+    stroke-width: 1.5;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+  }
+  .feat-content h3 {
+    font-size: 14px;
+    font-weight: 600;
+    margin-bottom: 6px;
+    line-height: 1.3;
+    max-width: 200px;
+  }
+  .feat-content p {
+    font-size: 12.5px;
+    color: var(--muted-2);
+    line-height: 1.55;
+    max-width: 200px;
+  }
+
+  /* divider */
+  .divider {
+    height: 1px;
+    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.08), transparent);
+    margin: 20px 0 0;
+  }
+
+  /* ─────────── WHAT WE DO ─────────── */
+  .what-section {
+    padding: 90px 0 80px;
+    text-align: center;
+  }
+  .what-label {
+    color: var(--purple-bright);
+    font-size: 14px;
+    font-weight: 500;
+    margin-bottom: 18px;
+  }
+  .what-h2 {
+    font-size: 36px;
+    font-weight: 600;
+    letter-spacing: -0.8px;
+    margin-bottom: 12px;
+  }
+  .what-sub {
+    font-size: 22px;
+    color: var(--purple-bright);
+    font-weight: 400;
+    margin-bottom: 70px;
+  }
+
+  .pipeline {
+    display: flex;
+    align-items: flex-start;
+    justify-content: center;
+    gap: 8px;
+    max-width: 1100px;
+    margin: 0 auto;
+  }
+  .pipe-step {
+    flex: 1;
+    max-width: 220px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+  }
+  .pipe-circle {
+    width: 110px; height: 110px;
+    border-radius: 50%;
+    border: 1.5px solid rgba(167,139,250,0.35);
+    background: rgba(124,58,237,0.05);
+    display: flex; align-items: center; justify-content: center;
+    margin-bottom: 26px;
+  }
+  .pipe-circle svg {
+    width: 44px; height: 44px;
+    stroke: var(--purple-bright);
+    fill: none;
+    stroke-width: 1.4;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+  }
+  .pipe-step h3 {
+    font-size: 17px;
+    font-weight: 600;
+    margin-bottom: 12px;
+    letter-spacing: -0.3px;
+  }
+  .pipe-step p {
+    font-size: 14px;
+    color: var(--muted-2);
+    line-height: 1.55;
+    max-width: 180px;
+  }
+  .pipe-arrow {
+    margin-top: 45px;
+    color: var(--purple-bright);
+    font-size: 24px;
+    flex-shrink: 0;
+  }
+
+  /* ─────────── STATS ─────────── */
+  .stats-section { padding: 0 0 80px; }
+  .stats-box {
+    background: rgba(15,15,30,0.6);
+    border: 1px solid rgba(255,255,255,0.05);
+    border-radius: 16px;
+    padding: 40px 50px;
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 20px;
+  }
+  .stat {
+    display: flex;
+    align-items: center;
+    gap: 18px;
+  }
+  .stat-icon {
+    width: 32px; height: 32px;
+    flex-shrink: 0;
+  }
+  .stat-icon svg {
+    width: 100%; height: 100%;
+    stroke: var(--purple-bright);
+    fill: none;
+    stroke-width: 1.5;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+  }
+  .stat-num {
+    font-size: 36px;
+    font-weight: 600;
+    letter-spacing: -1px;
+    line-height: 1;
+    margin-bottom: 4px;
+  }
+  .stat-label {
+    font-size: 13px;
+    color: var(--muted-2);
+  }
+
+  /* ─────────── TESTIMONIALS ─────────── */
+  .testi-section { padding: 40px 0 60px; }
+  .testi-label {
+    text-align: center;
+    color: var(--purple-bright);
+    font-size: 14px;
+    font-weight: 500;
+    margin-bottom: 40px;
+  }
+  .testi-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 60px;
+    max-width: 1000px;
+    margin: 0 auto;
+  }
+  .testi {
+    display: flex;
+    gap: 16px;
+  }
+  .testi-quote {
+    font-size: 36px;
+    color: var(--purple-bright);
+    line-height: 1;
+    font-family: Georgia, serif;
+    flex-shrink: 0;
+  }
+  .testi-body p {
+    font-size: 14px;
+    line-height: 1.7;
+    color: rgba(255,255,255,0.85);
+    margin-bottom: 20px;
+  }
+  .testi-author {
+    font-size: 13px;
+    color: var(--muted-2);
+    border-top: 1px solid rgba(255,255,255,0.06);
+    padding-top: 12px;
+    max-width: 220px;
+    line-height: 1.6;
+  }
+  .testi-author span { display: block; }
+
+  /* ─────────── CONTACT ─────────── */
+  .contact-section {
+    padding: 80px 0 100px;
+    position: relative;
+    overflow: hidden;
+  }
+  .contact-section::before {
+    content: '';
+    position: absolute;
+    width: 700px; height: 500px;
+    left: 50%; top: 50%;
+    transform: translate(-50%, -50%);
+    background: radial-gradient(ellipse at center, rgba(109,40,217,0.18) 0%, transparent 65%);
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  .contact-head {
+    text-align: center;
+    margin-bottom: 56px;
+    position: relative;
+    z-index: 1;
+  }
+  .contact-label {
+    color: var(--purple-bright);
+    font-size: 14px;
+    font-weight: 500;
+    margin-bottom: 14px;
+  }
+  .contact-h2 {
+    font-size: 36px;
+    font-weight: 600;
+    letter-spacing: -0.8px;
+    margin-bottom: 12px;
+  }
+  .contact-sub {
+    font-size: 16px;
+    color: var(--muted);
+    max-width: 480px;
+    margin: 0 auto;
+    line-height: 1.6;
+  }
+
+  .contact-grid {
+    display: grid;
+    grid-template-columns: 1fr 1.2fr;
+    gap: 60px;
+    max-width: 1080px;
+    margin: 0 auto;
+    position: relative;
+    z-index: 1;
+    align-items: start;
+  }
+
+  /* contact info card */
+  .info-card {
+    background: rgba(15,15,30,0.6);
+    border: 1px solid rgba(255,255,255,0.06);
+    border-radius: 16px;
+    padding: 36px 32px;
+  }
+  .info-title {
+    font-size: 13px;
+    color: var(--purple-bright);
+    font-weight: 500;
+    margin-bottom: 22px;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+  }
+
+  .info-row {
+    display: flex;
+    gap: 14px;
+    align-items: flex-start;
+    padding: 14px 0;
+    border-bottom: 1px solid rgba(255,255,255,0.05);
+  }
+  .info-row:last-child { border-bottom: none; }
+
+  .info-icon {
+    width: 38px; height: 38px;
+    flex-shrink: 0;
+    border-radius: 10px;
+    border: 1.5px solid rgba(167,139,250,0.35);
+    background: rgba(124,58,237,0.08);
+    display: flex; align-items: center; justify-content: center;
+  }
+  .info-icon svg {
+    width: 18px; height: 18px;
+    stroke: var(--purple-bright);
+    fill: none;
+    stroke-width: 1.6;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+  }
+  .info-text h4 {
+    font-size: 12px;
+    color: var(--muted-2);
+    font-weight: 500;
+    margin-bottom: 4px;
+  }
+  .info-text p, .info-text a {
+    font-size: 14.5px;
+    color: #fff;
+    font-weight: 500;
+    line-height: 1.5;
+    text-decoration: none;
+    display: block;
+  }
+  .info-text a:hover { color: var(--purple-bright); }
+
+  /* form card */
+  .form-card {
+    background: rgba(15,15,30,0.6);
+    border: 1px solid rgba(255,255,255,0.06);
+    border-radius: 16px;
+    padding: 40px;
+  }
+  .form-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 18px;
+    margin-bottom: 18px;
+  }
+  .form-group {
+    margin-bottom: 18px;
+    display: flex;
+    flex-direction: column;
+  }
+  .form-group label {
+    font-size: 12px;
+    color: var(--muted-2);
+    margin-bottom: 8px;
+    font-weight: 500;
+    letter-spacing: 0.3px;
+  }
+  .form-group input,
+  .form-group textarea,
+  .form-group select {
+    background: rgba(0,0,0,0.3);
+    border: 1px solid rgba(255,255,255,0.08);
+    border-radius: 10px;
+    padding: 12px 14px;
+    color: #fff;
+    font-family: 'Inter', sans-serif;
+    font-size: 14px;
+    transition: border-color .2s, background .2s;
+    width: 100%;
+  }
+  .form-group input:focus,
+  .form-group textarea:focus,
+  .form-group select:focus {
+    outline: none;
+    border-color: var(--purple-bright);
+    background: rgba(124,58,237,0.05);
+  }
+  .form-group textarea {
+    min-height: 110px;
+    resize: vertical;
+    font-family: inherit;
+  }
+  .form-group select {
+    appearance: none;
+    background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%23A78BFA' stroke-width='2'><polyline points='6 9 12 15 18 9'/></svg>");
+    background-repeat: no-repeat;
+    background-position: right 14px center;
+    padding-right: 36px;
+  }
+  .form-group select option { background: #0f0f1a; color: #fff; }
+
+  .submit-btn {
+    width: 100%;
+    background: linear-gradient(135deg, var(--purple) 0%, var(--purple-deep) 100%);
+    color: #fff;
+    font-family: 'Inter', sans-serif;
+    font-size: 15px;
+    font-weight: 600;
+    padding: 14px 24px;
+    border: none;
+    border-radius: 10px;
+    cursor: pointer;
+    transition: transform .15s, box-shadow .25s;
+    margin-top: 6px;
+    box-shadow: 0 4px 16px rgba(124,58,237,0.3);
+  }
+  .submit-btn:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 8px 24px rgba(124,58,237,0.45);
+  }
+  .submit-btn:active { transform: translateY(0); }
+
+  .form-success {
+    display: none;
+    background: rgba(34,197,94,0.1);
+    border: 1px solid rgba(34,197,94,0.3);
+    color: #4ade80;
+    padding: 12px 16px;
+    border-radius: 10px;
+    font-size: 13px;
+    margin-top: 14px;
+    text-align: center;
+  }
+  .form-success.show { display: block; }
+
+  /* animations */
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  .fade { animation: fadeUp .7s ease both; }
+  .d1 { animation-delay: .1s; } .d2 { animation-delay: .2s; }
+  .d3 { animation-delay: .3s; } .d4 { animation-delay: .4s; }
+
+  /* responsive */
+  @media (max-width: 1100px) {
+    .container { padding: 0 32px; }
+    .hero-grid { grid-template-columns: 1fr; gap: 60px; }
+    .phones-wrap { height: 600px; }
+    .hero-h1 { font-size: 48px; }
+    .what-h2 { font-size: 28px; }
+    .what-sub { font-size: 17px; }
+    .pipeline { flex-wrap: wrap; }
+    .stats-box { grid-template-columns: repeat(2, 1fr); padding: 30px; }
+    .testi-grid { grid-template-columns: 1fr; gap: 40px; }
+    .contact-grid { grid-template-columns: 1fr; gap: 32px; }
+    .contact-h2 { font-size: 28px; }
+    .form-card, .info-card { padding: 28px 22px; }
+    .form-row { grid-template-columns: 1fr; gap: 0; }
+  }
+  @media (max-width: 600px) {
+    .container { padding: 0 20px; }
+    .hero-h1 { font-size: 38px; }
+    .phones-wrap { height: 500px; transform: scale(0.85); }
+    .pipe-arrow { display: none; }
+    .pipeline { gap: 40px; }
+  }
+</style>
+</head>
+<body>
+
+<!-- ═══════════ HERO ═══════════ -->
+<section class="hero">
+  <div class="container">
+    <div class="hero-grid">
+
+      <!-- LEFT -->
+      <div class="fade">
+        <div class="logo">Dial<span>IQ</span></div>
+        <h1 class="hero-h1">
+          Smarter<br>
+          conversations.<br>
+          <span class="pp">Stronger<br>operations.</span>
+        </h1>
+        <p class="hero-sub">
+          DialIQ helps enterprises modernise customer operations with Amazon Connect, mobile-first agent experiences, operational intelligence, and AI that takes action.
+        </p>
+      </div>
+
+      <!-- MIDDLE - phones -->
+      <div class="phones-wrap fade d2">
+
+        <!-- back phone -->
+        <div class="iphone phone-back">
+          <div class="iphone-screen">
+            <div class="notch"></div>
+            <div class="phone-back-logo">Dial<span>IQ</span></div>
+          </div>
+        </div>
+
+        <!-- front phone -->
+        <div class="iphone phone-front">
+          <div class="iphone-screen">
+            <div class="notch"></div>
+
+            <div class="status-row">
+              <span class="available-pill">Available</span>
+            </div>
+
+            <div class="keypad">
+              <div class="key"><span class="num">1</span><span class="letters">&nbsp;</span></div>
+              <div class="key"><span class="num">2</span><span class="letters">ABC</span></div>
+              <div class="key"><span class="num">3</span><span class="letters">DEF</span></div>
+              <div class="key"><span class="num">4</span><span class="letters">GHI</span></div>
+              <div class="key"><span class="num">5</span><span class="letters">JKL</span></div>
+              <div class="key"><span class="num">6</span><span class="letters">MNO</span></div>
+              <div class="key"><span class="num">7</span><span class="letters">PQRS</span></div>
+              <div class="key"><span class="num">8</span><span class="letters">TUV</span></div>
+              <div class="key"><span class="num">9</span><span class="letters">WXYZ</span></div>
+              <div class="key symbol"><span class="num">*</span><span class="letters">&nbsp;</span></div>
+              <div class="key"><span class="num">0</span><span class="letters">+</span></div>
+              <div class="key symbol"><span class="num">#</span><span class="letters">&nbsp;</span></div>
+            </div>
+
+            <div class="call-btn-wrap">
+              <div class="call-btn">
+                <svg viewBox="0 0 24 24"><path d="M19.5 17.3l-2.7-2.7c-.4-.4-1-.4-1.4 0l-1.5 1.5c-.2.2-.5.2-.7 0-1.5-.9-2.8-2.2-3.7-3.7-.1-.2-.1-.5.1-.7l1.5-1.5c.4-.4.4-1 0-1.4L8.4 6.1c-.4-.4-1-.4-1.4 0L5.2 7.9c-.6.6-.8 1.6-.4 2.4 1.7 4 5 7.3 9 9 .8.3 1.7.1 2.4-.5l1.8-1.8c.4-.4.4-1.1.1-1.5z"/></svg>
+              </div>
+            </div>
+
+            <div class="phone-tabs">
+              <div class="tab active">
+                <svg viewBox="0 0 24 24"><rect x="3" y="6" width="18" height="12" rx="2"/><line x1="7" y1="10" x2="7" y2="10"/><line x1="11" y1="10" x2="11" y2="10"/><line x1="15" y1="10" x2="15" y2="10"/></svg>
+                <span>Keypad</span>
+              </div>
+              <div class="tab">
+                <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><polyline points="12 7 12 12 15 14"/></svg>
+                <span>Recents</span>
+              </div>
+              <div class="tab">
+                <svg viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+                <span>Contacts</span>
+              </div>
+              <div class="tab">
+                <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+                <span>Settings</span>
+              </div>
+            </div>
+
+            <div class="home-bar"></div>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- RIGHT - Our Story -->
+      <div class="fade d3">
+        <div class="story-label">Our story</div>
+        <h2 class="story-h2">The future of customer operations is native.</h2>
+
+        <div class="feat-list">
+          <div class="feat-row">
+            <div class="feat-icon">
+              <svg viewBox="0 0 24 24"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+            </div>
+            <div class="feat-content">
+              <h3>Native voice, chat and task handling on any device</h3>
+              <p>Empower your teams to connect and resolve from anywhere.</p>
+            </div>
+          </div>
+
+          <div class="feat-row">
+            <div class="feat-icon">
+              <svg viewBox="0 0 24 24"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+            </div>
+            <div class="feat-content">
+              <h3>SSO sign-in</h3>
+              <p>Secure access with enterprise-grade single sign-on.</p>
+            </div>
+          </div>
+
+          <div class="feat-row">
+            <div class="feat-icon">
+              <svg viewBox="0 0 24 24"><path d="M9 2h6a1 1 0 0 1 1 1v2H8V3a1 1 0 0 1 1-1z"/><rect x="5" y="5" width="14" height="17" rx="2"/><line x1="9" y1="11" x2="15" y2="11"/><line x1="9" y1="15" x2="15" y2="15"/><line x1="9" y1="19" x2="13" y2="19"/></svg>
+            </div>
+            <div class="feat-content">
+              <h3>Full audit trail</h3>
+              <p>Complete visibility across every action, every time.</p>
+            </div>
+          </div>
+
+          <div class="feat-row">
+            <div class="feat-icon">
+              <svg viewBox="0 0 24 24"><rect x="9" y="2" width="6" height="12" rx="3"/><path d="M5 11a7 7 0 0 0 14 0"/><line x1="12" y1="18" x2="12" y2="22"/><line x1="8" y1="22" x2="16" y2="22"/></svg>
+            </div>
+            <div class="feat-content">
+              <h3>Call recordings and transcripts</h3>
+              <p>Capture, store and review conversations with ease.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+  <div class="container"><div class="divider"></div></div>
+</section>
+
+<!-- ═══════════ WHAT WE DO ═══════════ -->
+<section class="what-section">
+  <div class="container">
+    <div class="what-label">What we do.</div>
+    <h2 class="what-h2">We're not your normal consultancy.</h2>
+    <p class="what-sub">We listen, understand and build long-term strategic outcomes — together.</p>
+
+    <div class="pipeline">
+      <div class="pipe-step">
+        <div class="pipe-circle">
+          <svg viewBox="0 0 24 24"><path d="M18 10a6 6 0 0 0-11.3-2A4.5 4.5 0 0 0 7 17h11a4 4 0 0 0 0-7z"/></svg>
+        </div>
+        <h3>Amazon Connect</h3>
+        <p>Enterprise-grade contact centre foundation.</p>
+      </div>
+
+      <div class="pipe-arrow">→</div>
+
+      <div class="pipe-step">
+        <div class="pipe-circle">
+          <svg viewBox="0 0 24 24"><rect x="7" y="2" width="10" height="20" rx="2"/><line x1="11" y1="18" x2="13" y2="18"/></svg>
+        </div>
+        <h3>DialIQ</h3>
+        <p>Native voice, chat and task handling on any device.</p>
+      </div>
+
+      <div class="pipe-arrow">→</div>
+
+      <div class="pipe-step">
+        <div class="pipe-circle">
+          <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+        </div>
+        <h3>AgentCore</h3>
+        <p>Intelligence that understands intent and automates work.</p>
+      </div>
+
+      <div class="pipe-arrow">→</div>
+
+      <div class="pipe-step">
+        <div class="pipe-circle">
+          <svg viewBox="0 0 24 24"><polyline points="3 17 9 11 13 15 21 7"/><polyline points="14 7 21 7 21 14"/></svg>
+        </div>
+        <h3>Long-Term Outcomes</h3>
+        <p>Solutions built to scale with your business.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════ STATS ═══════════ -->
+<section class="stats-section">
+  <div class="container">
+    <div class="stats-box">
+      <div class="stat">
+        <div class="stat-icon">
+          <svg viewBox="0 0 24 24"><path d="M4.5 16.5c-1.5 1.26-2 5-2 5s3.74-.5 5-2c.71-.84.7-2.13-.09-2.91a2.18 2.18 0 0 0-2.91-.09z"/><path d="M12 15l-3-3a22 22 0 0 1 2-3.95A12.88 12.88 0 0 1 22 2c0 2.72-.78 7.5-6 11a22.35 22.35 0 0 1-4 2z"/><path d="M9 12H4s.55-3.03 2-4c1.62-1.08 5 0 5 0"/><path d="M12 15v5s3.03-.55 4-2c1.08-1.62 0-5 0-5"/></svg>
+        </div>
+        <div>
+          <div class="stat-num">128+</div>
+          <div class="stat-label">Deployments</div>
+        </div>
+      </div>
+
+      <div class="stat">
+        <div class="stat-icon">
+          <svg viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+        </div>
+        <div>
+          <div class="stat-num">24K+</div>
+          <div class="stat-label">Agents Supported</div>
+        </div>
+      </div>
+
+      <div class="stat">
+        <div class="stat-icon">
+          <svg viewBox="0 0 24 24"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"/></svg>
+        </div>
+        <div>
+          <div class="stat-num">5.3M+</div>
+          <div class="stat-label">Conversations Handled</div>
+        </div>
+      </div>
+
+      <div class="stat">
+        <div class="stat-icon">
+          <svg viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+        </div>
+        <div>
+          <div class="stat-num">99.9%</div>
+          <div class="stat-label">Platform Uptime</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════ TESTIMONIALS ═══════════ -->
+<section class="testi-section">
+  <div class="container">
+    <div class="testi-label">What our customers say</div>
+    <div class="testi-grid">
+      <div class="testi">
+        <div class="testi-quote">"</div>
+        <div class="testi-body">
+          <p>Our agents needed flexibility — our business needed compliance, a mobile-first approach to reaching our customers whilst maintaining recording in Amazon Connect.</p>
+          <div class="testi-author">
+            — Head of Customer Operations<br>
+            <span>Enterprise Retail</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="testi">
+        <div class="testi-quote">"</div>
+        <div class="testi-body">
+          <p>DialIQ listened, understood our challenges and then developed outcomes based on conversational insights. This resulted in better understanding our customers and streamlining operations across the business.</p>
+          <div class="testi-author">
+            — Director of Customer Experience<br>
+            <span>Financial Services</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════ CONTACT ═══════════ -->
+<section class="contact-section" id="contact">
+  <div class="container">
+    <div class="contact-head">
+      <div class="contact-label">Get in touch</div>
+      <h2 class="contact-h2">Let's build smarter operations, together.</h2>
+      <p class="contact-sub">Tell us about your contact centre goals — we'll get back within one business day.</p>
+    </div>
+
+    <div class="contact-grid">
+
+      <!-- LEFT: contact info -->
+      <div class="info-card">
+        <div class="info-title">Contact information</div>
+
+        <div class="info-row">
+          <div class="info-icon">
+            <svg viewBox="0 0 24 24"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
+          </div>
+          <div class="info-text">
+            <h4>Email us</h4>
+            <a href="mailto:Jas.dhesi@dialiq.co.uk">Jas.dhesi@dialiq.co.uk</a>
+          </div>
+        </div>
+
+        <div class="info-row">
+          <div class="info-icon">
+            <svg viewBox="0 0 24 24"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
+          </div>
+          <div class="info-text">
+            <h4>Call us</h4>
+            <a href="tel:+447516986735">+44 7516 986735</a>
+          </div>
+        </div>
+
+        <div class="info-row">
+          <div class="info-icon">
+            <svg viewBox="0 0 24 24"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+          </div>
+          <div class="info-text">
+            <h4>Visit us</h4>
+            <p>DialIQ Ltd.<br>1 Finsbury Avenue<br>London, EC2M 2PF<br>United Kingdom</p>
+          </div>
+        </div>
+
+        <div class="info-row">
+          <div class="info-icon">
+            <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+          </div>
+          <div class="info-text">
+            <h4>Office hours</h4>
+            <p>Mon – Fri · 09:00 – 18:00 GMT</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- RIGHT: form -->
+      <div class="form-card">
+        <form id="contactForm" onsubmit="return handleSubmit(event)">
+          <div class="form-row">
+            <div class="form-group">
+              <label for="firstName">First name</label>
+              <input type="text" id="firstName" name="firstName" placeholder="Jane" required>
+            </div>
+            <div class="form-group">
+              <label for="lastName">Last name</label>
+              <input type="text" id="lastName" name="lastName" placeholder="Doe" required>
+            </div>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label for="email">Work email</label>
+              <input type="email" id="email" name="email" placeholder="jane@company.com" required>
+            </div>
+            <div class="form-group">
+              <label for="company">Company</label>
+              <input type="text" id="company" name="company" placeholder="Acme Ltd." required>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label for="interest">I'm interested in</label>
+            <select id="interest" name="interest" required>
+              <option value="">Select an option…</option>
+              <option>Amazon Connect deployment</option>
+              <option>DialIQ voice agents</option>
+              <option>AgentCore</option>
+              <option>General enquiry</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label for="message">Message</label>
+            <textarea id="message" name="message" placeholder="Tell us about your project, team size, or challenges you're facing…" required></textarea>
+          </div>
+
+          <button type="submit" class="submit-btn">Send message</button>
+          <div class="form-success" id="formSuccess">
+            ✓ Thanks — we've received your message. We'll be in touch within one business day.
+          </div>
+        </form>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<script>
+  function handleSubmit(e) {
+    e.preventDefault();
+    document.getElementById('formSuccess').classList.add('show');
+    document.getElementById('contactForm').reset();
+    setTimeout(() => {
+      document.getElementById('formSuccess').classList.remove('show');
+    }, 6000);
+    return false;
+  }
+</script>
+
+</body>
+</html>
