@@ -560,6 +560,22 @@
     letter-spacing: -2px;
     line-height: 1.1;
     color: var(--white);
+    font-variant-numeric: tabular-nums;
+    font-feature-settings: "tnum";
+  }
+  .stat-number .stat-count {
+    display: inline-block;
+    transition: text-shadow .3s ease;
+  }
+  .stat-number.counting .stat-count { color: var(--accent, #8b7cf6); }
+  .stat-number.counted .stat-count {
+    animation: statSettle .5s cubic-bezier(.2,.8,.3,1.4);
+    text-shadow: 0 0 18px rgba(139,124,246,.55);
+  }
+  @keyframes statSettle {
+    0%   { transform: scale(1); }
+    40%  { transform: scale(1.14); }
+    100% { transform: scale(1); }
   }
   .stat-label {
     font-size: 14px;
@@ -974,7 +990,7 @@
           <svg viewBox="0 0 24 24"><path d="M6 15l-3 6 6-3"/><path d="M10 19l-3 3"/><path d="M5 14l3-3"/><path d="M4.5 16.5c-1.5 1.26-2 5-2 5s3.74-.5 5-2c.71-.84.7-2.13-.09-2.91a2.18 2.18 0 0 0-2.91-.09z" opacity="0"/><path d="M14.5 4L18 2l2 3.5"/><path d="M20 2c0 0-5.2 2.2-9.5 6.5S5 18 5 18l1 1s5.7-1.3 10-5.5S20 2 20 2z"/><circle cx="15" cy="9" r="1.5"/></svg>
         </div>
         <div class="stat-text">
-          <div class="stat-number">10+</div>
+          <div class="stat-number"><span class="stat-count" data-target="10" data-decimals="0" data-suffix="+">0</span></div>
           <div class="stat-label">Deployments</div>
         </div>
       </div>
@@ -983,7 +999,7 @@
           <svg viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
         </div>
         <div class="stat-text">
-          <div class="stat-number">1K+</div>
+          <div class="stat-number"><span class="stat-count" data-target="1" data-decimals="1" data-suffix="K+">0</span></div>
           <div class="stat-label">Agents Supported</div>
         </div>
       </div>
@@ -992,7 +1008,7 @@
           <svg viewBox="0 0 24 24"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
         </div>
         <div class="stat-text">
-          <div class="stat-number">2M+</div>
+          <div class="stat-number"><span class="stat-count" data-target="2" data-decimals="1" data-suffix="M+">0</span></div>
           <div class="stat-label">Conversations Handled</div>
         </div>
       </div>
@@ -1001,7 +1017,7 @@
           <svg viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
         </div>
         <div class="stat-text">
-          <div class="stat-number">99.9%</div>
+          <div class="stat-number"><span class="stat-count" data-target="99.9" data-decimals="1" data-suffix="%">0</span></div>
           <div class="stat-label">Platform Uptime</div>
         </div>
       </div>
@@ -1067,6 +1083,62 @@ function handleSubmit(e) {
   setTimeout(() => document.getElementById('formSuccess').classList.remove('show'), 6000);
   return false;
 }
+
+// ── Stat counters: rapid rev-up + settle, like a launch-day dashboard ──
+(function () {
+  function easeOutExpo(t) {
+    return t === 1 ? 1 : 1 - Math.pow(2, -10 * t);
+  }
+
+  function animateCounter(el) {
+    const target = parseFloat(el.dataset.target);
+    const decimals = parseInt(el.dataset.decimals || '0', 10);
+    const suffix = el.dataset.suffix || '';
+    const duration = 1600 + Math.random() * 400; // slight variance so they don't all lock in unison
+    const numberEl = el.closest('.stat-number');
+    let start = null;
+
+    numberEl.classList.add('counting');
+
+    function tick(ts) {
+      if (start === null) start = ts;
+      const elapsed = ts - start;
+      const progress = Math.min(elapsed / duration, 1);
+      const eased = easeOutExpo(progress);
+      const value = target * eased;
+
+      el.textContent = value.toFixed(decimals) + suffix;
+
+      if (progress < 1) {
+        requestAnimationFrame(tick);
+      } else {
+        el.textContent = target.toFixed(decimals) + suffix;
+        numberEl.classList.remove('counting');
+        numberEl.classList.add('counted');
+      }
+    }
+    requestAnimationFrame(tick);
+  }
+
+  const counters = document.querySelectorAll('.stat-count[data-target]');
+  if (!counters.length) return;
+
+  if (!('IntersectionObserver' in window)) {
+    counters.forEach(animateCounter);
+    return;
+  }
+
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach((entry) => {
+      if (entry.isIntersecting) {
+        animateCounter(entry.target);
+        observer.unobserve(entry.target);
+      }
+    });
+  }, { threshold: 0.4 });
+
+  counters.forEach((el) => observer.observe(el));
+})();
 </script>
 
 </body>
