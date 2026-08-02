@@ -195,6 +195,34 @@
     color: var(--muted);
     line-height: 1.6;
   }
+  .appstore-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    align-self: flex-start;
+    margin-top: 24px;
+    padding: 10px 18px 10px 16px;
+    border-radius: 12px;
+    background: linear-gradient(135deg, var(--purple-deep), var(--purple));
+    border: 1px solid rgba(167,139,250,0.45);
+    text-decoration: none;
+    transition: transform .2s, box-shadow .2s, opacity .2s;
+  }
+  .appstore-btn:hover {
+    transform: translateY(-2px);
+    opacity: 0.92;
+    box-shadow: 0 10px 26px rgba(139,92,246,0.35);
+  }
+  .appstore-btn svg {
+    width: 24px; height: 24px;
+    fill: #fff;
+    flex-shrink: 0;
+  }
+  .appstore-btn .as-text { display: flex; flex-direction: column; line-height: 1.15; }
+  .appstore-btn .as-small { font-size: 9.5px; color: rgba(255,255,255,0.8); letter-spacing: 0.4px; text-transform: uppercase; }
+  .appstore-btn .as-big { font-size: 15px; font-weight: 700; color: #fff; letter-spacing: -0.2px; }
+  /* shown only once .right-col is hidden on tablet/mobile */
+  .appstore-btn--compact { display: none; }
 
   /* ═══════════════════════════════════════════
      FOUR PILLARS
@@ -724,6 +752,21 @@
     margin-top: 12px; text-align: center;
   }
   .form-success.show { display: block; }
+  .form-error {
+    display: none;
+    background: rgba(239,68,68,0.08);
+    border: 1px solid rgba(239,68,68,0.3);
+    color: #f87171; padding: 11px 14px;
+    border-radius: 9px; font-size: 12.5px;
+    margin-top: 12px; text-align: center;
+  }
+  .form-error.show { display: block; }
+  .submit-btn:disabled { opacity: 0.6; cursor: progress; }
+  /* Honeypot — off-screen rather than display:none, which some bots skip. */
+  .hp-field {
+    position: absolute; left: -9999px;
+    width: 1px; height: 1px; overflow: hidden;
+  }
   .privacy-link { margin-top: 14px; text-align: center; font-size: 12.5px; }
   .privacy-link a { color: var(--muted); text-decoration: none; transition: color .2s; }
   .privacy-link a:hover { color: var(--purple-bright); text-decoration: underline; }
@@ -751,7 +794,8 @@
     .hero-story::before { width: 100%; background: rgba(10,10,30,0.85); }
     .world-map { opacity: 0.3; width: 100%; }
     .right-col { display: none; }
-    
+    .appstore-btn--compact { display: inline-flex; margin-top: 20px; }
+
     /* Pillars */
     .pillars-box { grid-template-columns: repeat(2, 1fr); gap: 24px; }
     .pillar:not(:last-child)::after { display: none; }
@@ -899,6 +943,14 @@
         </h1>
         <p class="story-p">For years, we&#39;ve designed, delivered and scaled Amazon Connect for organisations globally, working through large rollouts, complex migrations and integrations across CRM, workforce and compliance platforms.</p>
         <p class="story-p">RoamCX is the result, a mobile app for Amazon Connect built on years of hands-on delivery rather than consulting alone, bringing voice, chat, tasks and operational intelligence together in one place for every team that needs it.</p>
+
+        <a class="appstore-btn appstore-btn--compact" href="https://apps.apple.com/in/app/roamcx/id6788740852" target="_blank" rel="noopener">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M17.05 12.54c-.02-2.2 1.8-3.26 1.88-3.31-1.03-1.5-2.62-1.71-3.19-1.73-1.36-.14-2.65.8-3.34.8-.69 0-1.75-.78-2.88-.76-1.48.02-2.85.86-3.61 2.18-1.54 2.67-.39 6.62 1.11 8.79.73 1.06 1.6 2.25 2.74 2.21 1.1-.04 1.52-.71 2.85-.71 1.33 0 1.7.71 2.86.69 1.18-.02 1.93-1.08 2.65-2.14.84-1.23 1.18-2.42 1.2-2.48-.03-.01-2.29-.88-2.31-3.48zM14.87 5.9c.6-.74 1.01-1.75.9-2.77-.87.04-1.94.59-2.57 1.31-.56.64-1.06 1.68-.93 2.67.98.08 1.98-.49 2.6-1.21z"/></svg>
+          <span class="as-text">
+            <span class="as-small">Download on the</span>
+            <span class="as-big">App Store</span>
+          </span>
+        </a>
       </div>
 
       <!-- CENTRE COLUMN: phone image -->
@@ -953,6 +1005,14 @@
           </div>
 
         </div>
+
+        <a class="appstore-btn" href="https://apps.apple.com/in/app/roamcx/id6788740852" target="_blank" rel="noopener">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M17.05 12.54c-.02-2.2 1.8-3.26 1.88-3.31-1.03-1.5-2.62-1.71-3.19-1.73-1.36-.14-2.65.8-3.34.8-.69 0-1.75-.78-2.88-.76-1.48.02-2.85.86-3.61 2.18-1.54 2.67-.39 6.62 1.11 8.79.73 1.06 1.6 2.25 2.74 2.21 1.1-.04 1.52-.71 2.85-.71 1.33 0 1.7.71 2.86.69 1.18-.02 1.93-1.08 2.65-2.14.84-1.23 1.18-2.42 1.2-2.48-.03-.01-2.29-.88-2.31-3.48zM14.87 5.9c.6-.74 1.01-1.75.9-2.77-.87.04-1.94.59-2.57 1.31-.56.64-1.06 1.68-.93 2.67.98.08 1.98-.49 2.6-1.21z"/></svg>
+          <span class="as-text">
+            <span class="as-small">Download on the</span>
+            <span class="as-big">App Store</span>
+          </span>
+        </a>
       </div>
 
     </div>
@@ -1100,8 +1160,14 @@
             <label for="msg">Message</label>
             <textarea id="msg" required></textarea>
           </div>
-          <button type="submit" class="submit-btn">Send message</button>
+          <!-- Honeypot: hidden from people, irresistible to bots. Must stay empty. -->
+          <div class="hp-field" aria-hidden="true">
+            <label for="website">Website</label>
+            <input type="text" id="website" name="website" tabindex="-1" autocomplete="off">
+          </div>
+          <button type="submit" class="submit-btn" id="submitBtn">Send message</button>
           <div class="form-success" id="formSuccess">✓ Thanks — we've received your message. We'll be in touch within one business day.</div>
+          <div class="form-error" id="formError"></div>
           <p class="privacy-link"><a href="privacy-policy.html" target="_blank" rel="noopener">Privacy Policy</a></p>
         </form>
       </div>
@@ -1109,11 +1175,56 @@
   </div>
 </section>
 <script>
-function handleSubmit(e) {
+// ── Contact form ──
+// Endpoint comes from the ContactEndpoint output of infra/contact-form.yaml.
+const CONTACT_ENDPOINT = 'https://niherxlkq7.execute-api.eu-west-2.amazonaws.com/prod/contact';
+
+async function handleSubmit(e) {
   e.preventDefault();
-  document.getElementById('formSuccess').classList.add('show');
-  e.target.reset();
-  setTimeout(() => document.getElementById('formSuccess').classList.remove('show'), 6000);
+
+  const form = e.target;
+  const btn = document.getElementById('submitBtn');
+  const ok = document.getElementById('formSuccess');
+  const err = document.getElementById('formError');
+
+  ok.classList.remove('show');
+  err.classList.remove('show');
+  btn.disabled = true;
+  btn.textContent = 'Sending…';
+
+  const payload = {
+    firstName: document.getElementById('fn').value.trim(),
+    lastName:  document.getElementById('ln').value.trim(),
+    email:     document.getElementById('em').value.trim(),
+    company:   document.getElementById('co').value.trim(),
+    interest:  document.getElementById('interest').value,
+    message:   document.getElementById('msg').value.trim(),
+    website:   document.getElementById('website').value // honeypot
+  };
+
+  try {
+    const res = await fetch(CONTACT_ENDPOINT, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload)
+    });
+    const data = await res.json().catch(() => ({}));
+
+    if (!res.ok || !data.ok) {
+      throw new Error(data.error || 'Request failed');
+    }
+
+    form.reset();
+    ok.classList.add('show');
+    setTimeout(() => ok.classList.remove('show'), 8000);
+  } catch (ex) {
+    err.textContent = "Sorry — we couldn't send that. Please email jas.dhesi@roamcx.com directly.";
+    err.classList.add('show');
+  } finally {
+    btn.disabled = false;
+    btn.textContent = 'Send message';
+  }
+
   return false;
 }
 

@@ -1,0 +1,329 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: >
+  RoamCX "Get in touch" contact form backend.
+  HTTP API Gateway -> Lambda -> DynamoDB (persist submission) + SES (notification email).
+
+Parameters:
+
+  ProjectName:
+    Type: String
+    Default: roamcx-contact
+    Description: Prefix used to name all resources created by this stack.
+    AllowedPattern: '[a-z0-9-]+'
+
+  SenderEmail:
+    Type: String
+    Default: priyatam.piyush@roamcx.com
+    Description: >
+      SES "From" address. This identity (or its domain) MUST be verified in SES
+      in the same region as this stack before any mail will send.
+
+  RecipientEmails:
+    Type: CommaDelimitedList
+    Default: 'jas.dhesi@roamcx.com,priyatam.piyush@roamcx.com'
+    Description: >
+      Comma-separated notification recipients. While the SES account is in the
+      sandbox, every one of these must also be a verified identity.
+
+  AllowedOrigin:
+    Type: String
+    Default: 'https://roamcx.com'
+    Description: >
+      Exact browser origin allowed to call the API (scheme + host, no trailing slash).
+      Use '*' only for local testing — it lets any site post to your form.
+
+  SubmissionRetentionDays:
+    Type: Number
+    Default: 0
+    MinValue: 0
+    MaxValue: 3650
+    Description: >
+      Days to keep submissions in DynamoDB before TTL deletes them.
+      0 = keep forever (no expiry attribute is written).
+
+  LogRetentionDays:
+    Type: Number
+    Default: 30
+    AllowedValues: [1, 3, 5, 7, 14, 30, 60, 90, 120, 150, 180, 365]
+    Description: CloudWatch Logs retention for the Lambda function.
+
+  ThrottleRateLimit:
+    Type: Number
+    Default: 5
+    Description: Steady-state requests/second allowed on the API stage.
+
+  ThrottleBurstLimit:
+    Type: Number
+    Default: 10
+    Description: Burst requests allowed on the API stage.
+
+Conditions:
+
+  HasRetention: !Not [!Equals [!Ref SubmissionRetentionDays, 0]]
+
+Resources:
+
+  # ─────────────────────────────────────────────
+  # DynamoDB — every submission is stored here
+  # ─────────────────────────────────────────────
+  SubmissionsTable:
+    Type: AWS::DynamoDB::Table
+    UpdateReplacePolicy: Retain
+    DeletionPolicy: Retain
+    Properties:
+      TableName: !Sub '${ProjectName}-submissions'
+      BillingMode: PAY_PER_REQUEST
+      # submissionId = uuid, submittedAt = ISO-8601 sort key so a single
+      # enquirer's history reads back in order.
+      AttributeDefinitions:
+        - AttributeName: submissionId
+          AttributeType: S
+        - AttributeName: submittedAt
+          AttributeType: S
+        - AttributeName: recordType
+          AttributeType: S
+      KeySchema:
+        - AttributeName: submissionId
+          KeyType: HASH
+        - AttributeName: submittedAt
+          KeyType: RANGE
+      GlobalSecondaryIndexes:
+        # Lets you list every submission newest-first without a table scan:
+        # query recordType = "submission", ScanIndexForward = false.
+        - IndexName: byDateIndex
+          KeySchema:
+            - AttributeName: recordType
+              KeyType: HASH
+            - AttributeName: submittedAt
+              KeyType: RANGE
+          Projection:
+            ProjectionType: ALL
+      TimeToLiveSpecification:
+        AttributeName: expiresAt
+        Enabled: !If [HasRetention, true, false]
+      PointInTimeRecoverySpecification:
+        PointInTimeRecoveryEnabled: true
+      SSESpecification:
+        SSEEnabled: true
+
+  # ─────────────────────────────────────────────
+  # Lambda — validate, persist, notify
+  # ─────────────────────────────────────────────
+  ContactFunctionRole:
+    Type: AWS::IAM::Role
+    Properties:
+      RoleName: !Sub '${ProjectName}-lambda-role'
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: lambda.amazonaws.com
+            Action: sts:AssumeRole
+      Policies:
+        - PolicyName: write-submission-and-send-mail
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - Effect: Allow
+                Action: dynamodb:PutItem
+                Resource: !GetAtt SubmissionsTable.Arn
+              - Effect: Allow
+                Action:
+                  - ses:SendEmail
+                  - ses:SendRawEmail
+                Resource: '*'
+                Condition:
+                  StringEquals:
+                    ses:FromAddress: !Ref SenderEmail
+              - Effect: Allow
+                Action:
+                  - logs:CreateLogStream
+                  - logs:PutLogEvents
+                Resource: !Sub 'arn:${AWS::Partition}:logs:${AWS::Region}:${AWS::AccountId}:log-group:/aws/lambda/${ProjectName}-handler:*'
+
+  ContactFunctionLogGroup:
+    Type: AWS::Logs::LogGroup
+    UpdateReplacePolicy: Delete
+    DeletionPolicy: Delete
+    Properties:
+      LogGroupName: !Sub '/aws/lambda/${ProjectName}-handler'
+      RetentionInDays: !Ref LogRetentionDays
+
+  ContactFunction:
+    Type: AWS::Lambda::Function
+    DependsOn: ContactFunctionLogGroup
+    Properties:
+      FunctionName: !Sub '${ProjectName}-handler'
+      Runtime: python3.12
+      Handler: index.handler
+      Role: !GetAtt ContactFunctionRole.Arn
+      Timeout: 15
+      MemorySize: 256
+      Environment:
+        Variables:
+          TABLE_NAME: !Ref SubmissionsTable
+          SENDER_EMAIL: !Ref SenderEmail
+          RECIPIENT_EMAILS: !Join [',', !Ref RecipientEmails]
+          ALLOWED_ORIGIN: !Ref AllowedOrigin
+          RETENTION_DAYS: !Ref SubmissionRetentionDays
+      Code:
+        ZipFile: |
+          import json, os, re, uuid, html
+          from datetime import datetime, timedelta, timezone
+          import boto3
+
+          ddb = boto3.client('dynamodb')
+          ses = boto3.client('ses')
+
+          TABLE = os.environ['TABLE_NAME']
+          SENDER = os.environ['SENDER_EMAIL']
+          RECIPIENTS = [e.strip() for e in os.environ['RECIPIENT_EMAILS'].split(',') if e.strip()]
+          ORIGIN = os.environ['ALLOWED_ORIGIN']
+          RETENTION = int(os.environ.get('RETENTION_DAYS', '0'))
+
+          EMAIL_RE = re.compile(r'^[^@\s]+@[^@\s]+\.[^@\s]+$')
+          FIELDS = {'firstName': 80, 'lastName': 80, 'email': 200,
+                    'company': 150, 'interest': 100, 'message': 5000}
+
+
+          def reply(status, body):
+              return {'statusCode': status,
+                      'headers': {'Content-Type': 'application/json',
+                                  'Access-Control-Allow-Origin': ORIGIN},
+                      'body': json.dumps(body)}
+
+
+          def handler(event, context):
+              try:
+                  p = json.loads(event.get('body') or '{}')
+              except json.JSONDecodeError:
+                  p = None
+              if not isinstance(p, dict):
+                  return reply(400, {'ok': False, 'error': 'Malformed request body.'})
+
+              # Honeypot: bots fill the hidden field. Look successful, store nothing.
+              if str(p.get('website') or '').strip():
+                  return reply(200, {'ok': True})
+
+              d, bad = {}, []
+              for name, cap in FIELDS.items():
+                  v = str(p.get(name) or '').strip()
+                  if not v:
+                      bad.append(name)
+                  d[name] = v[:cap]
+              if not EMAIL_RE.match(d['email']):
+                  bad.append('email')
+              if bad:
+                  return reply(422, {'ok': False, 'error': 'Please check the highlighted fields.',
+                                     'fields': sorted(set(bad))})
+
+              now = datetime.now(timezone.utc)
+              sid, at = str(uuid.uuid4()), now.isoformat()
+              ctx = (event.get('requestContext') or {}).get('http') or {}
+
+              item = {k: {'S': v} for k, v in d.items()}
+              item.update({'submissionId': {'S': sid}, 'submittedAt': {'S': at},
+                           'recordType': {'S': 'submission'},
+                           'sourceIp': {'S': ctx.get('sourceIp', 'unknown')},
+                           'userAgent': {'S': (ctx.get('userAgent') or 'unknown')[:512]}})
+              if RETENTION > 0:
+                  item['expiresAt'] = {'N': str(int((now + timedelta(days=RETENTION)).timestamp()))}
+
+              # Persist first: stored-but-not-emailed is recoverable.
+              try:
+                  ddb.put_item(TableName=TABLE, Item=item)
+              except Exception as exc:
+                  print(f'ERROR put_item: {exc}')
+                  return reply(500, {'ok': False, 'error': 'Something went wrong. Please try again.'})
+
+              who = f"{d['firstName']} {d['lastName']}".strip()
+              rows = [('Name', who), ('Email', d['email']), ('Company', d['company']),
+                      ('Interest', d['interest']), ('Submitted', at), ('Reference', sid)]
+              text = ('New enquiry from the RoamCX website\n\n'
+                      + '\n'.join(f'{k}: {v}' for k, v in rows)
+                      + f"\n\nMessage:\n{d['message']}\n")
+              cells = ''.join(f'<tr><td style="color:#8e8fa4;padding-right:14px">{k}</td>'
+                              f'<td>{html.escape(v)}</td></tr>' for k, v in rows)
+              body = ('<div style="font-family:sans-serif;font-size:14px;color:#111">'
+                      '<h2 style="color:#6D28D9">New RoamCX enquiry</h2>'
+                      f'<table>{cells}</table><br>'
+                      '<div style="padding:14px;background:#f6f5fb;border-left:3px solid #8B5CF6;'
+                      f'white-space:pre-wrap">{html.escape(d["message"])}</div></div>')
+
+              try:
+                  ses.send_email(
+                      Source=SENDER,
+                      Destination={'ToAddresses': RECIPIENTS},
+                      ReplyToAddresses=[d['email']],
+                      Message={'Subject': {'Data': f"RoamCX enquiry - {who} ({d['company']})",
+                                           'Charset': 'UTF-8'},
+                               'Body': {'Text': {'Data': text, 'Charset': 'UTF-8'},
+                                        'Html': {'Data': body, 'Charset': 'UTF-8'}}})
+              except Exception as exc:
+                  # Stored but not emailed - log it, still thank the visitor.
+                  print(f'ERROR send_email {sid}: {exc}')
+                  return reply(200, {'ok': True, 'reference': sid, 'emailed': False})
+
+              return reply(200, {'ok': True, 'reference': sid, 'emailed': True})
+
+  # ─────────────────────────────────────────────
+  # HTTP API Gateway — POST /contact
+  # ─────────────────────────────────────────────
+  ContactApi:
+    Type: AWS::ApiGatewayV2::Api
+    Properties:
+      Name: !Sub '${ProjectName}-api'
+      ProtocolType: HTTP
+      CorsConfiguration:
+        AllowOrigins: [!Ref AllowedOrigin]
+        AllowMethods: [POST, OPTIONS]
+        AllowHeaders: ['content-type']
+        MaxAge: 3600
+
+  ContactIntegration:
+    Type: AWS::ApiGatewayV2::Integration
+    Properties:
+      ApiId: !Ref ContactApi
+      IntegrationType: AWS_PROXY
+      IntegrationUri: !GetAtt ContactFunction.Arn
+      PayloadFormatVersion: '2.0'
+
+  ContactRoute:
+    Type: AWS::ApiGatewayV2::Route
+    Properties:
+      ApiId: !Ref ContactApi
+      RouteKey: 'POST /contact'
+      Target: !Sub 'integrations/${ContactIntegration}'
+
+  ContactStage:
+    Type: AWS::ApiGatewayV2::Stage
+    Properties:
+      ApiId: !Ref ContactApi
+      StageName: prod
+      AutoDeploy: true
+      DefaultRouteSettings:
+        ThrottlingRateLimit: !Ref ThrottleRateLimit
+        ThrottlingBurstLimit: !Ref ThrottleBurstLimit
+
+  ContactFunctionPermission:
+    Type: AWS::Lambda::Permission
+    Properties:
+      FunctionName: !Ref ContactFunction
+      Action: lambda:InvokeFunction
+      Principal: apigateway.amazonaws.com
+      SourceArn: !Sub 'arn:${AWS::Partition}:execute-api:${AWS::Region}:${AWS::AccountId}:${ContactApi}/*/*/contact'
+
+Outputs:
+
+  ContactEndpoint:
+    Description: POST the form JSON here. Paste this into CONTACT_ENDPOINT in index.html.
+    Value: !Sub 'https://${ContactApi}.execute-api.${AWS::Region}.${AWS::URLSuffix}/prod/contact'
+
+  SubmissionsTableName:
+    Description: DynamoDB table holding every submission.
+    Value: !Ref SubmissionsTable
+
+  FunctionLogGroup:
+    Description: CloudWatch log group — check here if mail does not arrive.
+    Value: !Ref ContactFunctionLogGroup
