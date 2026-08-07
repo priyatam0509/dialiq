@@ -25,12 +25,15 @@ Parameters:
       Comma-separated notification recipients. While the SES account is in the
       sandbox, every one of these must also be a verified identity.
 
-  AllowedOrigin:
-    Type: String
-    Default: 'https://roamcx.com'
+  AllowedOrigins:
+    Type: CommaDelimitedList
+    Default: '*'
     Description: >
-      Exact browser origin allowed to call the API (scheme + host, no trailing slash).
-      Use '*' only for local testing — it lets any site post to your form.
+      Browser origins allowed to call the API. '*' allows any site to post to
+      the form — convenient, but it means the endpoint can be called from
+      anywhere. To lock it down later, list exact origins (scheme + host, no
+      trailing slash); www counts as a separate origin, so list both:
+      'https://roamcx.com,https://www.roamcx.com'.
 
   SubmissionRetentionDays:
     Type: Number
@@ -165,11 +168,11 @@ Resources:
           TABLE_NAME: !Ref SubmissionsTable
           SENDER_EMAIL: !Ref SenderEmail
           RECIPIENT_EMAILS: !Join [',', !Ref RecipientEmails]
-          ALLOWED_ORIGIN: !Ref AllowedOrigin
+          ALLOWED_ORIGINS: !Join [',', !Ref AllowedOrigins]
           RETENTION_DAYS: !Ref SubmissionRetentionDays
       Code:
         ZipFile: |
-          import json, os, re, uuid, html
+          import json, os, re, uuid
           from datetime import datetime, timedelta, timezone
           import boto3
 
@@ -179,7 +182,7 @@ Resources:
           TABLE = os.environ['TABLE_NAME']
           SENDER = os.environ['SENDER_EMAIL']
           RECIPIENTS = [e.strip() for e in os.environ['RECIPIENT_EMAILS'].split(',') if e.strip()]
-          ORIGIN = os.environ['ALLOWED_ORIGIN']
+          ORIGINS = [o.strip() for o in os.environ['ALLOWED_ORIGINS'].split(',') if o.strip()]
           RETENTION = int(os.environ.get('RETENTION_DAYS', '0'))
 
           EMAIL_RE = re.compile(r'^[^@\s]+@[^@\s]+\.[^@\s]+$')
@@ -187,14 +190,17 @@ Resources:
                     'company': 150, 'interest': 100, 'message': 5000}
 
 
-          def reply(status, body):
-              return {'statusCode': status,
-                      'headers': {'Content-Type': 'application/json',
-                                  'Access-Control-Allow-Origin': ORIGIN},
-                      'body': json.dumps(body)}
-
-
           def handler(event, context):
+              # Echo the caller's origin if allow-listed; '*' allows any site.
+              origin = (event.get('headers') or {}).get('origin', '')
+              allow = '*' if '*' in ORIGINS else (origin if origin in ORIGINS else ORIGINS[0])
+
+              def reply(status, body):
+                  return {'statusCode': status,
+                          'headers': {'Content-Type': 'application/json',
+                                      'Access-Control-Allow-Origin': allow},
+                          'body': json.dumps(body)}
+
               try:
                   p = json.loads(event.get('body') or '{}')
               except json.JSONDecodeError:
@@ -222,11 +228,12 @@ Resources:
               sid, at = str(uuid.uuid4()), now.isoformat()
               ctx = (event.get('requestContext') or {}).get('http') or {}
 
-              item = {k: {'S': v} for k, v in d.items()}
-              item.update({'submissionId': {'S': sid}, 'submittedAt': {'S': at},
-                           'recordType': {'S': 'submission'},
-                           'sourceIp': {'S': ctx.get('sourceIp', 'unknown')},
-                           'userAgent': {'S': (ctx.get('userAgent') or 'unknown')[:512]}})
+              S = lambda v: {'S': v}
+              item = {k: S(v) for k, v in d.items()}
+              item.update({'submissionId': S(sid), 'submittedAt': S(at),
+                           'recordType': S('submission'),
+                           'sourceIp': S(ctx.get('sourceIp', 'unknown')),
+                           'userAgent': S((ctx.get('userAgent') or 'unknown')[:512])})
               if RETENTION > 0:
                   item['expiresAt'] = {'N': str(int((now + timedelta(days=RETENTION)).timestamp()))}
 
@@ -243,14 +250,6 @@ Resources:
               text = ('New enquiry from the RoamCX website\n\n'
                       + '\n'.join(f'{k}: {v}' for k, v in rows)
                       + f"\n\nMessage:\n{d['message']}\n")
-              cells = ''.join(f'<tr><td style="color:#8e8fa4;padding-right:14px">{k}</td>'
-                              f'<td>{html.escape(v)}</td></tr>' for k, v in rows)
-              body = ('<div style="font-family:sans-serif;font-size:14px;color:#111">'
-                      '<h2 style="color:#6D28D9">New RoamCX enquiry</h2>'
-                      f'<table>{cells}</table><br>'
-                      '<div style="padding:14px;background:#f6f5fb;border-left:3px solid #8B5CF6;'
-                      f'white-space:pre-wrap">{html.escape(d["message"])}</div></div>')
-
               try:
                   ses.send_email(
                       Source=SENDER,
@@ -258,8 +257,7 @@ Resources:
                       ReplyToAddresses=[d['email']],
                       Message={'Subject': {'Data': f"RoamCX enquiry - {who} ({d['company']})",
                                            'Charset': 'UTF-8'},
-                               'Body': {'Text': {'Data': text, 'Charset': 'UTF-8'},
-                                        'Html': {'Data': body, 'Charset': 'UTF-8'}}})
+                               'Body': {'Text': {'Data': text, 'Charset': 'UTF-8'}}})
               except Exception as exc:
                   # Stored but not emailed - log it, still thank the visitor.
                   print(f'ERROR send_email {sid}: {exc}')
@@ -276,7 +274,7 @@ Resources:
       Name: !Sub '${ProjectName}-api'
       ProtocolType: HTTP
       CorsConfiguration:
-        AllowOrigins: [!Ref AllowedOrigin]
+        AllowOrigins: !Ref AllowedOrigins
         AllowMethods: [POST, OPTIONS]
         AllowHeaders: ['content-type']
         MaxAge: 3600

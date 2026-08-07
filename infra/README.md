@@ -33,7 +33,7 @@ aws cloudformation deploy \
   --parameter-overrides \
       SenderEmail=priyatam.piyush@roamcx.com \
       RecipientEmails='jas.dhesi@roamcx.com\,priyatam.piyush@roamcx.com' \
-      AllowedOrigin=https://roamcx.com
+      AllowedOrigins='*'
 ```
 
 `CAPABILITY_NAMED_IAM` is required because the Lambda execution role has a
@@ -61,8 +61,14 @@ Paste the `ContactEndpoint` output into `index.html`:
 const CONTACT_ENDPOINT = 'https://xxxxxxxx.execute-api.eu-west-2.amazonaws.com/prod/contact';
 ```
 
-`AllowedOrigin` must exactly match the origin the site is served from —
-scheme + host, no trailing slash, and `www.` counts as a different origin.
+`AllowedOrigins` currently defaults to `*`, so any origin can post. To lock it
+down to the real site, pass exact origins — scheme + host, no trailing slash,
+and remember `www.` is a *different* origin from the apex:
+
+```bash
+--parameter-overrides AllowedOrigins='https://roamcx.com\,https://www.roamcx.com'
+```
+
 A mismatch shows up as a CORS error in the browser console, not a server error.
 
 ## Parameters
@@ -71,7 +77,7 @@ A mismatch shows up as a CORS error in the browser console, not a server error.
 |---|---|---|
 | `SenderEmail` | `priyatam.piyush@roamcx.com` | Must be a verified SES identity |
 | `RecipientEmails` | both addresses | Comma-separated |
-| `AllowedOrigin` | `https://roamcx.com` | Use `http://localhost:8000` for local testing |
+| `AllowedOrigins` | `*` | Any origin. Pass an escaped comma-separated list to restrict |
 | `SubmissionRetentionDays` | `0` | `0` = keep forever; otherwise TTL-deletes after N days |
 | `LogRetentionDays` | `30` | CloudWatch Logs retention |
 | `ThrottleRateLimit` / `ThrottleBurstLimit` | `5` / `10` | Per-stage request throttling |
@@ -112,4 +118,7 @@ or a recipient while in the sandbox). The stored item is still in DynamoDB.
 - A hidden `website` honeypot field silently drops bot submissions — they get a
   `200` but nothing is stored or emailed.
 - Server-side validation mirrors the form's `required` attributes and caps
-  field lengths; the message body is HTML-escaped before it goes into the email.
+  field lengths. Notifications are plain text — no HTML injection surface.
+- Each item records `sourceIp` and `userAgent`, which is how you triage spam
+  while `AllowedOrigins` is `*`. Stage throttling (5 rps / 10 burst) caps the
+  blast radius of any flood.
